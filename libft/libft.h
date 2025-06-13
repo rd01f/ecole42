@@ -4,6 +4,21 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <limits.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+typedef struct fd_list
+{
+    char            *remainder;
+    int             fd;
+    struct fd_list  *next;
+}                   fd_list;
+
+typedef struct s_list
+{
+             void *content;
+        struct s_list *next;
+}   t_list;
 
 void *ft_calloc(size_t num, size_t size);
 void ft_bzero(void *s, size_t  n);
@@ -35,6 +50,17 @@ int ft_tolower(int c);
 int ft_isspace(int c);
 
 int ft_atoi(const char *nptr);
+
+t_list *ft_lstnew(void *content);
+void ft_lstadd_front(t_list **lst, t_list *new);
+int ft_lstsize(t_list *lst);
+t_list *ft_lstlast(t_list *lst);
+void ft_lstadd_back(t_list **lst, t_list *new);
+
+
+
+
+char *get_next_line(int fd);
 
 
 
