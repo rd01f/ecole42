@@ -21,7 +21,7 @@ void check_cache(int fd, t_list *list_of_caches)
   if (!list_of_caches)
   {
     line_remainder = NULL;
-    init_cache(fd,line_remainder);
+    init_cache(fd,line_remainder); // тут выделяется память при инициализации
     ft_lstnew(line_remainder); // тут выделяется память при инициализации
   }
   printf("check_remainder end\n");
@@ -43,23 +43,21 @@ char *get_next_line(int fd)
   size_t read_bytes;
   char *buff;
   char *ret_line;
+  char *offset;
 
-  
   check_cache(fd, list_of_caches);
   if(BUFFER_SIZE > 0)
     buff = malloc(BUFFER_SIZE + 1);
   if(buff && fd >= 0)
     read_bytes = read(fd, buff, BUFFER_SIZE);  
   buff[BUFFER_SIZE] = '\0';
-  if(ft_strchr(buff,'\n'))
-  {
-    get_line();
-    ret_line = ft_strdup(buff);
-  }
+  offset = (ft_strchr(buff,'\n') + 1);
+  *offset = '\0';
+  ret_line = ft_strdup(buff); 
   printf("offset = %ld\n",ret_line - buff);
   
   // buff[31] = '\0';
-  printf("%ld\n",read_bytes);
+ printf("%ld\n",read_bytes);
   // printf("%s\n",(char*)buff);  
   if(ret_line)
     {
