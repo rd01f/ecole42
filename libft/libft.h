@@ -7,16 +7,15 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-typedef struct fd_list
+typedef struct fd_remainder
 {
     char            *remainder;
     int             fd;
-    struct fd_list  *next;
-}                   fd_list;
+}   fd_remainder;
 
 typedef struct s_list
 {
-             void *content;
+        void *content;
         struct s_list *next;
 }   t_list;
 
