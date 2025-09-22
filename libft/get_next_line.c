@@ -35,7 +35,7 @@ void put_remainder_in_cache(int fd, char *offset, t_list *list_of_cahches)
   cache_elem = (fd_remainder *)(list_of_cahches->content);
   if(fd == cache_elem->fd)
     cache_elem->remainder = ft_strdup(offset);
-  printf("get_remainder%s\n",cache_elem->remainder);
+  //printf("get_remainder%s\n",cache_elem->remainder);
 }
 
 char *get_next_line(int fd)
@@ -52,19 +52,30 @@ char *get_next_line(int fd)
   if(buff && fd >= 0)
     read_bytes = read(fd, buff, BUFFER_SIZE);  
   buff[BUFFER_SIZE] = '\0';
-  if(ft_strchr(buff,'\n'))
+  
+
+
+
+  ret_line = ft_strdup(buff);
+  if(ft_strchr(ret_line,'\n'))
   {
-    offset = (ft_strchr(buff,'\n'));
+    offset = (ft_strchr(ret_line,'\n'));
     put_remainder_in_cache(fd, offset, list_of_caches);
     *offset = '\0';
-    ret_line = ft_strdup(buff); 
+    free(buff);
+    return(ret_line);
   }
-  // while(!ft_strchr(buff,'\n'))
-  // {
-
-  // }
- printf("offset = %ld\n",ret_line - buff);
- printf("%ld\n",read_bytes);
- free(buff);
+  while(!ft_strchr(ret_line,'\n'))
+  {
+    read_bytes = read(fd, buff, BUFFER_SIZE);
+    ret_line = ft_strjoin(ret_line,buff);
+    free(buff);
+  }
+  offset = (ft_strchr(ret_line,'\n'));
+  put_remainder_in_cache(fd, offset, list_of_caches);
+  *offset = '\0';
+//  printf("offset = %ld\n",ret_line - buff);
+  printf("%ld\n",read_bytes);
+// free(buff);
  return(ret_line);
 }
