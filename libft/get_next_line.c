@@ -14,6 +14,25 @@ t_list *init_first_elem(int fd, t_list *list_of_caches)
   return(list_of_caches = ft_lstnew(line_remainder));
 }
 
+char *init_line(int fd, char *line)
+{
+  char *offset;
+  char *buff;
+  size_t read_bytes;
+
+  read_bytes = -1;
+  buff = malloc(BUFFER_SIZE + 1);
+  if(!buff)
+    return(NULL);
+  offset = ft_strdup("\0");
+  read_bytes = read(fd,buff,BUFFER_SIZE);
+  buff[read_bytes] = '\0';
+  line = ft_strjoin(offset,buff);
+  free(offset);
+  free(buff);
+  return(line);
+}
+
 char *check_cache(int fd, t_list *list_of_caches)
 {
   fd_remainder *cache_elem;
@@ -52,14 +71,6 @@ char *get_line(int fd, char *line)
   buff = malloc(BUFFER_SIZE + 1);
   if(!buff)
     return(NULL);
-  if(!line)
-  {
-    offset = ft_strdup("\0");
-    read_bytes = read(fd,buff,BUFFER_SIZE);
-    buff[read_bytes] = '\0';
-    line = ft_strjoin(offset,buff);
-    free(offset);
-  }
   while(!ft_strchr(line,'\n') && read_bytes != 0)
   {
     read_bytes = read(fd,buff,BUFFER_SIZE);
@@ -75,6 +86,8 @@ char *get_line(int fd, char *line)
     free(line);
     return(NULL);
   }
+  // printf("strlen %ld  read_bytes %ld\n",ft_strlen(ft_strchr(line,'\n')),read_bytes);
+  // printf("remainder %ld\n",ft_strlen(ft_strchr(line,'\n'))%read_bytes);
   return(line); 
 }
 
@@ -86,6 +99,8 @@ char *get_next_line(int fd)
   if(BUFFER_SIZE < 0 || fd < 0)
     return(NULL);
   ret_line = check_cache(fd, list_of_caches);
+  if(!ret_line)
+    ret_line = init_line(fd, ret_line);
   ret_line = get_line(fd, ret_line);
     // if(!list_of_caches)
   //   list_of_caches = init_first_elem(fd, list_of_caches);
