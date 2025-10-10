@@ -20,7 +20,7 @@ char *init_line(int fd, char *line)
   char *buff;
   size_t read_bytes;
 
-  read_bytes = -1;
+  read_bytes = 1;
   buff = malloc(BUFFER_SIZE + 1);
   if(!buff)
     return(NULL);
@@ -67,7 +67,7 @@ char *get_line(int fd, char *line)
   char *buff;
   size_t read_bytes;
 
-  read_bytes = -1;
+  read_bytes = 1;
   buff = malloc(BUFFER_SIZE + 1);
   if(!buff)
     return(NULL);
@@ -86,8 +86,8 @@ char *get_line(int fd, char *line)
     free(line);
     return(NULL);
   }
-  // printf("strlen %ld  read_bytes %ld\n",ft_strlen(ft_strchr(line,'\n')),read_bytes);
-  // printf("remainder %ld\n",ft_strlen(ft_strchr(line,'\n'))%read_bytes);
+  offset = ft_strchr(line,'\n') + 1;
+  *offset = '\0';
   return(line); 
 }
 
@@ -102,6 +102,7 @@ char *get_next_line(int fd)
   if(!ret_line)
     ret_line = init_line(fd, ret_line);
   ret_line = get_line(fd, ret_line);
+ 
     // if(!list_of_caches)
   //   list_of_caches = init_first_elem(fd, list_of_caches);
  return(ret_line);
