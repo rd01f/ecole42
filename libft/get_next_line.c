@@ -16,7 +16,7 @@ t_list *init_first_elem(int fd, t_list *list_of_caches)
 
 char *init_line(int fd, char *line)
 {
-  char *offset;
+  //char *offset;
   char *buff;
   size_t read_bytes;
 
@@ -24,11 +24,16 @@ char *init_line(int fd, char *line)
   buff = malloc(BUFFER_SIZE + 1);
   if(!buff)
     return(NULL);
-  offset = ft_strdup("\0");
+  //offset = ft_strdup("\0");
   read_bytes = read(fd,buff,BUFFER_SIZE);
+if (read_bytes <= 0)
+{
+    free(buff);
+    return NULL;
+}
   buff[read_bytes] = '\0';
-  line = ft_strjoin(offset,buff);
-  free(offset);
+  line = ft_strjoin("",buff);
+  //free(offset);
   free(buff);
   return(line);
 }
@@ -66,6 +71,7 @@ char *get_line(int fd, char *line)
   char *offset;
   char *buff;
   size_t read_bytes;
+  char *newline_pos;
 
   read_bytes = 1;
   buff = malloc(BUFFER_SIZE + 1);
@@ -74,7 +80,9 @@ char *get_line(int fd, char *line)
   while(!ft_strchr(line,'\n') && read_bytes != 0)
   {
     read_bytes = read(fd,buff,BUFFER_SIZE);
-    buff[read_bytes] = '\0';
+    if (read_bytes <= 0)
+      break;
+    buff[read_bytes ] = '\0';
     offset = ft_strdup(line);
     free(line);
     line = ft_strjoin(offset,buff);
@@ -86,9 +94,10 @@ char *get_line(int fd, char *line)
     free(line);
     return(NULL);
   }
-  offset = ft_strchr(line,'\n') + 1;
-  *offset = '\0';
-  return(line); 
+  newline_pos = ft_strchr(line, '\n');
+  if (newline_pos)
+      *(newline_pos + 1) = '\0';
+  return(line);  
 }
 
 char *get_next_line(int fd)
@@ -101,9 +110,29 @@ char *get_next_line(int fd)
   ret_line = check_cache(fd, list_of_caches);
   if(!ret_line)
     ret_line = init_line(fd, ret_line);
-  ret_line = get_line(fd, ret_line);
+  if(ret_line != NULL)
+    ret_line = get_line(fd, ret_line);
  
     // if(!list_of_caches)
   //   list_of_caches = init_first_elem(fd, list_of_caches);
  return(ret_line);
+}
+
+int main()
+{
+  int fd;
+  char *line;
+
+  fd = open("../text",O_RDONLY);
+  line = get_next_line(fd);
+  printf("%s",line);
+  while(line != NULL)
+  {
+    free(line);
+    line = get_next_line(fd);
+    if(line != NULL)
+      printf("%s",line);
+  }
+  free(line);
+  return(0);
 }
