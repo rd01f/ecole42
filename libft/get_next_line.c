@@ -16,7 +16,6 @@ t_list *init_first_elem(int fd, t_list *list_of_caches)
 
 char *init_line(int fd, char *line)
 {
-  //char *offset;
   char *buff;
   size_t read_bytes;
 
@@ -24,7 +23,6 @@ char *init_line(int fd, char *line)
   buff = malloc(BUFFER_SIZE + 1);
   if(!buff)
     return(NULL);
-  //offset = ft_strdup("\0");
   read_bytes = read(fd,buff,BUFFER_SIZE);
 if (read_bytes <= 0)
 {
@@ -33,9 +31,30 @@ if (read_bytes <= 0)
 }
   buff[read_bytes] = '\0';
   line = ft_strjoin("",buff);
-  //free(offset);
   free(buff);
   return(line);
+}
+
+void purge_cache(int fd, t_list *list_of_caches)
+{
+  t_list *cur;
+  fd_remainder *cache_elem;
+
+  cur = list_of_caches;
+  while (cur)
+  {
+    cache_elem = (fd_remainder *)cur->content;
+    if(cache_elem && cache_elem->fd == fd)
+    {
+      if(cache_elem->remainder)
+      {
+        free(cache_elem->remainder);
+        cache_elem->remainder = NULL;
+      }
+      return;
+    }
+    cur = cur->next;
+  }
 }
 
 char *check_cache(int fd, t_list *list_of_caches)
@@ -46,12 +65,12 @@ char *check_cache(int fd, t_list *list_of_caches)
     return(NULL);
   cache_elem = list_of_caches->content;
   if( fd == cache_elem->fd)
-    return(cache_elem->remainder);
+    return ft_strdup(cache_elem->remainder);
   while(list_of_caches->next)
   {
     cache_elem = list_of_caches->content;
     if( fd == cache_elem->fd)
-      return(cache_elem->remainder);
+      return ft_strdup(cache_elem->remainder);
   }
   return(NULL);
 }
@@ -63,15 +82,15 @@ void put_remainder_in_cache(int fd, char *offset, t_list *list_of_caches)
   cache_elem = (fd_remainder *)(list_of_caches->content);
   if(fd == cache_elem->fd)
     cache_elem->remainder = ft_strdup(offset);
-  //printf("get_remainder%s\n",cache_elem->remainder);
 }
 
-char *get_line(int fd, char *line)
+char *get_line(int fd, char *line, t_list *list_of_caches)
 {
   char *offset;
   char *buff;
   size_t read_bytes;
   char *newline_pos;
+  char *remainder;
 
   read_bytes = 1;
   buff = malloc(BUFFER_SIZE + 1);
@@ -96,7 +115,13 @@ char *get_line(int fd, char *line)
   }
   newline_pos = ft_strchr(line, '\n');
   if (newline_pos)
-      *(newline_pos + 1) = '\0';
+  {
+    remainder = ft_strdup(newline_pos + 1);
+    *(newline_pos + 1) = '\0';
+    if(*remainder != '\0')
+      put_remainder_in_cache(fd, remainder, list_of_caches);
+    free(remainder);
+  }
   return(line);  
 }
 
@@ -110,11 +135,12 @@ char *get_next_line(int fd)
   ret_line = check_cache(fd, list_of_caches);
   if(!ret_line)
     ret_line = init_line(fd, ret_line);
+  else
+    purge_cache(fd, list_of_caches);
+  if(!list_of_caches)
+    list_of_caches = init_first_elem(fd, list_of_caches);
   if(ret_line != NULL)
-    ret_line = get_line(fd, ret_line);
- 
-    // if(!list_of_caches)
-  //   list_of_caches = init_first_elem(fd, list_of_caches);
+    ret_line = get_line(fd, ret_line, list_of_caches);
  return(ret_line);
 }
 
